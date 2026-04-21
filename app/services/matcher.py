@@ -1,10 +1,19 @@
-from sklearn.feature_extraction.text import TfidfVectorizer
+from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 
-vectorizer = TfidfVectorizer()
+# load once (global, not inside function)
+model = SentenceTransformer("paraphrase-MiniLM-L3-v2")
 
 def match_resume(resume: str, job: str):
-    vectors = vectorizer.fit_transform([resume, job])
-    score = cosine_similarity(vectors[0:1], vectors[1:2])[0][0]
+    # convert text → embeddings
+    embeddings = model.encode([resume, job])
 
-    return {"match_score": float(score)}
+    # compute similarity
+    score = cosine_similarity(
+        [embeddings[0]],
+        [embeddings[1]]
+    )[0][0]
+
+    return {
+        "match_score": float(score)
+    }
